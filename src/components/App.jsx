@@ -1,47 +1,75 @@
-import '../styles/App.scss';
-// Fichero src/components/App.jsx
-import { useEffect, useState } from 'react';
-import callToApi from '../services/api'; // Importamos el servicio que acabamos de crear
+import "../styles/App.scss";
+
+import { useEffect, useState } from "react";
 
 const App = () => {
-  // Estados
-
-  const [showsData, setshowsData] = useState([]);
-  const [searchShow, setsearchShow] = useState('');
-
-  // Llamar a la api con useEffect
+  const [countryList, setCountryList] = useState([]);
+  const [searchCountry, setSearchCountry] = useState("");
 
   useEffect(() => {
-    // Dentro de useEffect llamamos a la API
-    callToApi(searchShow).then((response) => {
-      // Cuando la API responde guardamos los datos en el estado para que se vuelva a renderizar el componente
-      setshowsData(response);
-    });
-    // Aquí ponemos un array vacío porque solo queremos que se llame a la API la primera vez
-  }, [searchShow]);
-  const handleSearchName = (ev) => {
-    setsearchShow(ev.target.value);
-  };
-  const renderShows = () => {
-    return showsData.map((show, index) => {
-      return <li key={index}>Serie: {show.name}</li>;
-    });
+    fetch("https://restcountries.com/v3.1/all")
+      .then((response) => response.json())
+      .then((data) => {
+        setCountryList(data);
+      }, []);
+  });
+
+  const handleInputSearch = (ev) => {
+    setSearchCountry(ev.target.value);
+  }
+
+  const renderCountry = () => {
+    return countryList
+      .filter((eachCountry) =>
+        eachCountry.name.common
+          .toLowerCase()
+          .includes(searchCountry.toLowerCase())
+      )
+      .map((eachCountry, index) => {
+        return (
+          <li key={index} className="Country__item">
+            <p className="country__flag">
+              <img
+                className="img_flag"
+                src={eachCountry.flags.png}
+                alt="flag"
+              />
+            </p>
+            <h3 className="country__name">{eachCountry.name.common}</h3>
+            <p className="country__cap">{eachCountry.capital}</p>
+            <p className="country__cont">{eachCountry.continents}</p>
+          </li>
+        );
+      });
   };
 
   return (
     <div>
-      <form>
-        <label htmlFor="name">Busca tu serie favorita</label>
+      <header>
+        <h1>Country Info App</h1>
         <input
-          type="text"
-          value={searchShow}
-          name="name"
-          id="name"
-          onChange={handleSearchName}
+          type="search"
+          name="search"
+          id=""
+          value={searchCountry}
+          placeholder="Filtrar países por nombre"
+          onChange={handleInputSearch}
         />
-      </form>
-      <h2>Series con el nombre: {searchShow}</h2>
-      <ul>{renderShows()}</ul>
+        <select name="" id="">
+          <option value="all">All</option>
+          <option value="">Africa</option>
+          <option value="">North America</option>
+          <option value="">South America</option>
+          <option value="">Asia</option>
+          <option value="">Europe</option>
+          <option value="">Oceania</option>
+        </select>
+
+
+      </header>
+      <main>
+        <ul className="list">{renderCountry()}</ul>
+      </main>
     </div>
   );
 };
